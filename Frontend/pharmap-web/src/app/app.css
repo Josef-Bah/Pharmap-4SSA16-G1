@@ -1,0 +1,9 @@
+.home {
+  max-width: 640px;
+  margin: 15vh auto 0;
+  padding: 0 16px;
+  text-align: center;
+  font-family: system-ui, sans-serif;
+}
+.home h1 { color: #a00000; margin-bottom: 8px; }
+.todo { color: #777; font-style: italic; }

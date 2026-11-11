@@ -1,0 +1,43 @@
+# Architecture globale
+
+```mermaid
+flowchart LR
+  FE["Front-end<br/>Angular :4200"]
+  subgraph DOCKER["Docker host"]
+    direction LR
+    GW["API Gateway<br/>Spring Cloud Gateway :8080"]
+    KC["Keycloak :8180<br/>rôles PATIENT / PHARMACIST / ADMIN"]
+    EU["Eureka :8761"]
+    CFG["Config Server :8888"]
+    MQ(["RabbitMQ :5672<br/>exchange pharmap.events"])
+    subgraph SVC["Microservices Spring Boot"]
+      PH["pharmacy-service :8081"]
+      DR["drug-catalog-service :8082"]
+      ST["stock-service :8083"]
+      PR["prescription-service :8084"]
+      RS["reservation-service :8085"]
+      NT["notification-service :8086"]
+    end
+    DB1[("MySQL<br/>pharmacy")]
+    DB2[("MySQL<br/>drugcatalog")]
+    DB3[("MySQL<br/>stock")]
+    DB4[("MySQL<br/>prescription")]
+    DB5[("MySQL<br/>reservation")]
+    DB6[("MongoDB<br/>notification")]
+  end
+  FE -->|HTTPS + JWT| GW
+  GW <-->|valide le token| KC
+  GW -.->|découverte| EU
+  SVC -.->|enregistrement| EU
+  SVC -.->|configuration| CFG
+  GW --> PH & DR & ST & PR & RS & NT
+  PH --- DB1
+  DR --- DB2
+  ST --- DB3
+  PR --- DB4
+  RS --- DB5
+  NT --- DB6
+  SVC <-.->|événements| MQ
+```
+
+> Diagramme Mermaid : affiché automatiquement par GitHub. Pour l'exporter en image : https://mermaid.live

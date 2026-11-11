@@ -1,0 +1,6 @@
+# Configuration partagée par tous les microservices (servie par le Config Server)
+pharmap:
+  reservation:
+    hold-duration-minutes: 120
+  events:
+    exchange: pharmap.events

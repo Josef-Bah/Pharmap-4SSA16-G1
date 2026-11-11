@@ -1,0 +1,113 @@
+# Pharmap - infrastructure locale (bases de données, broker, Keycloak)
+# Chaque membre lance UNIQUEMENT ce dont il a besoin, par exemple :
+#   docker compose up -d mysql-pharmacy rabbitmq
+# Tout lancer :  docker compose up -d
+# Les microservices Spring Boot eux-mêmes tournent depuis l'IDE (ils seront
+# dockerisés en séance 9 : voir la section "apps" en bas du fichier).
+
+name: pharmap
+
+x-mysql: &mysql-base
+  image: mysql:8.4
+  restart: unless-stopped
+  environment: &mysql-env
+    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    MYSQL_USER: ${DB_USER:-pharmap}
+    MYSQL_PASSWORD: ${DB_PASSWORD:-pharmap}
+  healthcheck:
+    test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+
+services:
+  # ---------- Une base MySQL PAR microservice (aucune base partagée) ----------
+  mysql-pharmacy:
+    <<: *mysql-base
+    container_name: pharmap-mysql-pharmacy
+    environment:
+      <<: *mysql-env
+      MYSQL_DATABASE: pharmap_pharmacy
+    ports: ["3307:3306"]
+    volumes: ["mysql-pharmacy-data:/var/lib/mysql"]
+
+  mysql-drugcatalog:
+    <<: *mysql-base
+    container_name: pharmap-mysql-drugcatalog
+    environment:
+      <<: *mysql-env
+      MYSQL_DATABASE: pharmap_drugcatalog
+    ports: ["3308:3306"]
+    volumes: ["mysql-drugcatalog-data:/var/lib/mysql"]
+
+  mysql-stock:
+    <<: *mysql-base
+    container_name: pharmap-mysql-stock
+    environment:
+      <<: *mysql-env
+      MYSQL_DATABASE: pharmap_stock
+    ports: ["3309:3306"]
+    volumes: ["mysql-stock-data:/var/lib/mysql"]
+
+  mysql-prescription:
+    <<: *mysql-base
+    container_name: pharmap-mysql-prescription
+    environment:
+      <<: *mysql-env
+      MYSQL_DATABASE: pharmap_prescription
+    ports: ["3310:3306"]
+    volumes: ["mysql-prescription-data:/var/lib/mysql"]
+
+  mysql-reservation:
+    <<: *mysql-base
+    container_name: pharmap-mysql-reservation
+    environment:
+      <<: *mysql-env
+      MYSQL_DATABASE: pharmap_reservation
+    ports: ["3311:3306"]
+    volumes: ["mysql-reservation-data:/var/lib/mysql"]
+
+  # ---------- Base du microservice commun (technologie avancée) ----------
+  mongodb:
+    image: mongo:7
+    container_name: pharmap-mongodb
+    restart: unless-stopped
+    ports: ["27017:27017"]
+    volumes: ["mongodb-data:/data/db"]
+
+  # ---------- Messagerie asynchrone ----------
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: pharmap-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # console web (guest / guest)
+    volumes: ["rabbitmq-data:/var/lib/rabbitmq"]
+
+  # ---------- Sécurité (utilisée à partir de la séance 8) ----------
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: pharmap-keycloak
+    restart: unless-stopped
+    command: ["start-dev"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports: ["8180:8080"]
+    volumes: ["keycloak-data:/opt/keycloak/data"]
+
+volumes:
+  mysql-pharmacy-data:
+  mysql-drugcatalog-data:
+  mysql-stock-data:
+  mysql-prescription-data:
+  mysql-reservation-data:
+  mongodb-data:
+  rabbitmq-data:
+  keycloak-data:
+
+# ---------- Séance 9 : dockerisation des applications ----------
+# Ajouter ici eureka-server, config-server, api-gateway et les 6 microservices
+# (un Dockerfile par projet, EUREKA_URL / DB_URL / RABBITMQ_HOST en variables
+# d'environnement) pour tout démarrer avec une seule commande.

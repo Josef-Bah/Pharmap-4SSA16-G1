@@ -1,0 +1,17 @@
+# Configuration de test : aucune infrastructure externe requise (H2 en mémoire)
+spring:
+  application:
+    name: reservation-service
+  cloud:
+    config:
+      enabled: false
+  datasource:
+    url: jdbc:h2:mem:reservation;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+eureka:
+  client:
+    enabled: false

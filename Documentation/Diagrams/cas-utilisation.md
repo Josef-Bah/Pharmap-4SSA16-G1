@@ -1,0 +1,25 @@
+# Cas d'utilisation
+
+```mermaid
+flowchart LR
+  P(["Patient"])
+  PHA(["Pharmacien"])
+  A(["Administrateur"])
+  P --> U1([Rechercher un médicament])
+  P --> U2([Trouver les pharmacies proches / de garde])
+  P --> U3([Réserver un médicament])
+  P --> U4([Déposer une ordonnance])
+  P --> U5([Créer une alerte retour en stock])
+  P --> U6([Consulter réservations et notifications])
+  U3 -. inclut .-> U7([Vérifier stock et ordonnance])
+  PHA --> V1([Mettre à jour son stock])
+  PHA --> V2([Accepter / refuser une réservation])
+  PHA --> V3([Confirmer le retrait])
+  PHA --> V4([Valider / rejeter une ordonnance])
+  PHA --> V5([Déclarer horaires et gardes])
+  A --> W1([Gérer le catalogue de médicaments])
+  A --> W2([Gérer les pharmacies])
+  A --> W3([Gérer les équivalences génériques])
+```
+
+> Diagramme Mermaid : affiché automatiquement par GitHub. Pour l'exporter en image : https://mermaid.live
